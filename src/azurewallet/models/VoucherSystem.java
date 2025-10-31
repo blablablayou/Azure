@@ -6,11 +6,9 @@ import java.util.*;
 import azurewallet.system.FileManager;
 
 public class VoucherSystem {
+    private static final String VOUCHERS_FILE = "src/azurewallet/data/vouchers.txt";
 
-    private static final String DATA_DIR = System.getProperty("user.dir") + "/src/azurewallet/data/";
-    private static final String VOUCHERS_FILE = DATA_DIR + "vouchers.txt";
-
-    // Auto-generate vouchers monthly (called by scheduler)
+    // =============== VOUCHER GENERATION ===============
     public static void generateMonthlyVouchers(Map<String, UserAccount> users) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(VOUCHERS_FILE, true))) {
             for (UserAccount u : users.values()) {
@@ -18,27 +16,50 @@ public class VoucherSystem {
                 String code = generateVoucherCode(u.getUsername());
                 pw.println(u.getUsername() + "," + code + "," + value + "," + LocalDate.now().plusMonths(1));
             }
-            System.out.println("Monthly vouchers generated successfully for all users.");
         } catch (IOException e) {
             System.out.println("Error generating vouchers.");
         }
     }
 
-    // Admin can manually trigger voucher generation
-    public static void generateManualVouchers(Map<String, UserAccount> users) {
-        try (PrintWriter pw = new PrintWriter(new FileWriter(VOUCHERS_FILE, true))) {
-            for (UserAccount u : users.values()) {
-                double value = getVoucherValueByRank(u.getRank());
-                String code = generateVoucherCode(u.getUsername());
-                pw.println(u.getUsername() + "," + code + "," + value + "," + LocalDate.now().plusMonths(1));
+    // =============== HOLIDAY's VOUCHER ===============
+    public static void generateHolidayVoucher(Map<String, UserAccount> users) {
+        LocalDate today = LocalDate.now();
+        String key = String.format("%02d-%02d", today.getMonthValue(), today.getDayOfMonth());
+        Map<String, String> HOLIDAYS = Map.of(
+            "01-01", "NEWYR",     // New Year
+            "02-25", "EDSA",      // EDSA Revolution
+            "04-09", "ARAW",      // Araw ng Kagitingan
+            "06-12", "INDEP",     // Independence Day
+            "11-01", "SAINT",     // All Saint's Day
+            "11-30", "BONI",      // Bonifacio Day
+            "12-25", "XMAS",      // Christmas
+            "12-30", "RIZAL"      // Rizal Day
+        );
+
+        if (HOLIDAYS.containsKey(key)) {
+            String holidayCode = HOLIDAYS.get(key) + today.getYear();
+            try (PrintWriter pw = new PrintWriter(new FileWriter(VOUCHERS_FILE, true))) {
+                for (UserAccount u : users.values()) {
+                    double value = getHolidayVoucherValue(u.getRank());
+                    pw.println(u.getUsername() + "," + holidayCode + "," + value + "," + today.plusMonths(1));
+                }
+                System.out.println("Holiday voucher '" + holidayCode + "' generated for all users!");
+            } catch (IOException e) {
+                System.out.println("Error generating holiday vouchers.");
             }
-            System.out.println("Admin-triggered vouchers successfully created for all users!");
-        } catch (IOException e) {
-            System.out.println("Error generating manual vouchers.");
         }
     }
 
-    // User redeem voucher
+    private static double getHolidayVoucherValue(String rank) {
+        return switch (rank) {
+            case "Silver" -> randomRange(150, 300);
+            case "Gold" -> randomRange(400, 600);
+            case "Platinum" -> randomRange(800, 1000);
+            default -> randomRange(50, 100);
+        };
+    }
+
+    // =============== EXISTING REDEEM ===============
     public static double redeemVoucher(UserAccount user, String code, FileManager fileManager) {
         List<String> lines = new ArrayList<>();
         double value = 0.0;
@@ -78,6 +99,7 @@ public class VoucherSystem {
         return value;
     }
 
+    // =============== VALUE ===============
     private static double getVoucherValueByRank(String rank) {
         return switch (rank) {
             case "Silver" -> randomRange(50, 100);

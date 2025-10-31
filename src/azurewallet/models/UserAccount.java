@@ -145,13 +145,12 @@ public class UserAccount {
         };
         double interest = balance * rate;
         balance += interest;
-        System.out.println("Monthly interest added: PHP " + df.format(interest));
     }
 
     public void viewVoucherNotification(FileManager fileManager) {
         int vouchers = fileManager.countUserVouchers(username);
         if (vouchers > 0) {
-            System.out.println("You have " + vouchers + " available voucher(s).");
+            System.out.println("  You have " + vouchers + " available voucher(s).");
         }
     }
 

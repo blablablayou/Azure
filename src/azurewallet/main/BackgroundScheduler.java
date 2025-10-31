@@ -20,7 +20,6 @@ public class BackgroundScheduler {
     public void runScheduler() {
         LocalDate today = LocalDate.now();
         if (!today.equals(lastRunDate)) {
-            System.out.println("Running background scheduler tasks...");
             applyMonthlyInterest();
             VoucherSystem.generateMonthlyVouchers(users);
             fileManager.logSchedulerRun();

@@ -20,17 +20,6 @@ public class AzureDigitalApp {
         users = fileManager.loadUsers();
         scheduler = new BackgroundScheduler(fileManager, users);
         scheduler.runScheduler();
-        showStartupSummary();
-    }
-
-    private void showStartupSummary() {
-        System.out.println("+==========================================================+");
-        System.out.println("|                AZURE DIGITAL WALLET STARTUP              |");
-        System.out.println("+==========================================================+");
-        System.out.printf("| Users found:                %-28d |\n", fileManager.getTotalUsersCount());
-        System.out.printf("| Active vouchers:            %-28d |\n", fileManager.getTotalVouchersCount());
-        System.out.printf("| Total system revenue:       PHP %-20.2f     |\n", fileManager.readSystemRevenue());
-        System.out.println("+==========================================================+\n");
     }
 
     public void start() {
@@ -81,6 +70,18 @@ public class AzureDigitalApp {
         String mobile = sc.nextLine().trim();
         if (mobile.equals("0") || mobile.equalsIgnoreCase("B")) return;
 
+        if (!mobile.matches("^09\\d{9}$")) {
+            System.out.println("| Invalid phone number.                                    |");
+            System.out.println("+==========================================================+");
+            return;
+        }
+
+        boolean exists = users.values().stream().anyMatch(u -> u.getMobile().equals(mobile));
+        if (exists) {
+            System.out.println("| This mobile number is already registered.                |");
+            System.out.println("+==========================================================+");
+            return;
+        }
         System.out.print("| Enter 4-digit PIN (0/B to go back): ");
         String pin = sc.nextLine().trim();
         if (pin.equals("0") || pin.equalsIgnoreCase("B")) return;
@@ -201,7 +202,7 @@ public class AzureDigitalApp {
             fileManager.logPoints(acc.getUsername(), "earned", pointsEarned, "from deposit");
         }
         fileManager.saveUsers(users);
-        System.out.println("| Deposit successful. Balance: PHP " + df.format(acc.getBalance()) + " |");
+        System.out.println("| Deposit successful. Balance: PHP " + df.format(acc.getBalance()) + "               |");
         System.out.println("+==========================================================+");
     }
 
