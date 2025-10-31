@@ -123,12 +123,13 @@ public class AzureDigitalApp {
             System.out.println("[1] Deposit");
             System.out.println("[2] Withdraw");
             System.out.println("[3] Pay Online");
-            System.out.println("[4] Redeem Voucher");
-            System.out.println("[5] Redeem Points");
-            System.out.println("[6] View Balance");
-            System.out.println("[7] View Transactions");
-            System.out.println("[8] View My Vouchers");
-            System.out.println("[9] Logout");
+            System.out.println("[4] Send Money to User");
+            System.out.println("[5] Redeem Voucher");
+            System.out.println("[6] Redeem Points");
+            System.out.println("[7] View Balance");
+            System.out.println("[8] View Transactions");
+            System.out.println("[9] View My Vouchers");
+            System.out.println("[10] Logout");
             System.out.print("Choose: ");
             String ch = sc.nextLine();
 
@@ -136,12 +137,13 @@ public class AzureDigitalApp {
                 case "1" -> deposit(acc);
                 case "2" -> withdraw(acc);
                 case "3" -> payOnline(acc);
-                case "4" -> redeemVoucher(acc);
-                case "5" -> redeemPoints(acc);
-                case "6" -> acc.displayBalance();
-                case "7" -> fileManager.showTransactions(acc.getUsername());
-                case "8" -> acc.viewMyVouchers(fileManager);
-                case "9" -> {
+                case "4" -> sendToUser(acc);
+                case "5" -> redeemVoucher(acc);
+                case "6" -> redeemPoints(acc);
+                case "7" -> acc.displayBalance();
+                case "8" -> fileManager.showTransactions(acc.getUsername());
+                case "9" -> acc.viewMyVouchers(fileManager);
+                case "10" -> {
                     fileManager.saveUsers(users);
                     System.out.println("Logged out successfully.");
                     return;
@@ -193,6 +195,45 @@ public class AzureDigitalApp {
         fileManager.logSystemRevenue(WITHDRAW_FEE);
         fileManager.saveUsers(users);
         System.out.println("Withdraw successful. PHP 15.00 fee applied. New balance: PHP " + df.format(acc.getBalance()));
+    }
+
+    private void sendToUser(UserAccount sender) {
+        System.out.print("Enter recipient username (or B to go back): ");
+        String recipient = sc.nextLine().trim().toLowerCase();
+        if (recipient.equalsIgnoreCase("b") || recipient.equals("0")) return;
+
+        if (!users.containsKey(recipient)) {
+            System.out.println("User not found.");
+            return;
+        }
+
+        if (recipient.equals(sender.getUsername())) {
+            System.out.println("You cannot send money to yourself.");
+            return;
+        }
+
+        System.out.print("Enter amount to send (0/B to go back): ");
+        String input = sc.nextLine().trim();
+        if (input.equalsIgnoreCase("b") || input.equals("0")) return;
+        double amount = Double.parseDouble(input);
+
+        if (amount <= 0 || amount > sender.getSendLimit()) {
+            System.out.println("Invalid or exceeds limit (" + df.format(sender.getSendLimit()) + ")");
+            return;
+        }
+
+        if (amount > sender.getBalance()) {
+            System.out.println("Insufficient balance.");
+            return;
+        }
+
+        UserAccount receiver = users.get(recipient);
+        sender.withdraw(amount);
+        receiver.deposit(amount);
+        fileManager.logTransaction(sender.getUsername(), "Sent to " + recipient, amount);
+        fileManager.logTransaction(recipient, "Received from " + sender.getUsername(), amount);
+        fileManager.saveUsers(users);
+        System.out.println("Successfully sent PHP " + df.format(amount) + " to " + recipient);
     }
 
     private void payOnline(UserAccount acc) {
