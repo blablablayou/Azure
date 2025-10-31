@@ -40,7 +40,7 @@ public class AzureDigitalApp {
             System.out.println("[3] Admin Login");
             System.out.println("[0] Exit");
             System.out.print("Choose: ");
-            String choice = sc.nextLine().trim();
+            String choice = sc.nextLine();
 
             switch (choice) {
                 case "1" -> register();
@@ -58,23 +58,21 @@ public class AzureDigitalApp {
 
     private void register() {
         System.out.println("\n--- USER REGISTRATION ---");
-        System.out.print("Enter username (0/B to go back): ");
+        System.out.print("Enter username (or B to go back): ");
         String username = sc.nextLine().trim().toLowerCase();
         if (username.equalsIgnoreCase("b") || username.equals("0")) return;
-
         if (users.containsKey(username)) {
             System.out.println("Username already exists.");
             return;
         }
 
-        System.out.print("Enter mobile number (0/B to go back): ");
+        System.out.print("Enter mobile number (or B to go back): ");
         String mobile = sc.nextLine().trim();
         if (mobile.equalsIgnoreCase("b") || mobile.equals("0")) return;
 
-        System.out.print("Enter 4-digit PIN (0/B to go back): ");
+        System.out.print("Enter 4-digit PIN (or B to go back): ");
         String pin = sc.nextLine().trim();
         if (pin.equalsIgnoreCase("b") || pin.equals("0")) return;
-
         if (pin.length() != 4) {
             System.out.println("PIN must be 4 digits.");
             return;
@@ -88,10 +86,9 @@ public class AzureDigitalApp {
 
     private void login() {
         System.out.println("\n--- LOGIN ---");
-        System.out.print("Username (0/B to go back): ");
+        System.out.print("Username (or B to go back): ");
         String username = sc.nextLine().trim().toLowerCase();
         if (username.equalsIgnoreCase("b") || username.equals("0")) return;
-
         if (!users.containsKey(username)) {
             System.out.println("User not found.");
             return;
@@ -104,10 +101,9 @@ public class AzureDigitalApp {
             return;
         }
 
-        System.out.print("Enter PIN (0/B to go back): ");
+        System.out.print("Enter PIN (or B to go back): ");
         String pin = sc.nextLine().trim();
         if (pin.equalsIgnoreCase("b") || pin.equals("0")) return;
-
         if (!acc.verifyPin(pin)) {
             acc.registerFailedAttempt();
             fileManager.saveUsers(users);
@@ -134,12 +130,7 @@ public class AzureDigitalApp {
             System.out.println("[8] View My Vouchers");
             System.out.println("[9] Logout");
             System.out.print("Choose: ");
-            String ch = sc.nextLine().trim();
-
-            if (ch.equalsIgnoreCase("b") || ch.equals("0")) {
-                System.out.println("Returning to main menu...");
-                return;
-            }
+            String ch = sc.nextLine();
 
             switch (ch) {
                 case "1" -> deposit(acc);
@@ -206,11 +197,11 @@ public class AzureDigitalApp {
 
     private void payOnline(UserAccount acc) {
         System.out.println("\n--- PAY ONLINE ---");
-        System.out.print("Enter merchant name (0/B to go back): ");
+        System.out.print("Enter merchant name (or B to go back): ");
         String merchant = sc.nextLine();
         if (merchant.equalsIgnoreCase("b") || merchant.equals("0")) return;
 
-        System.out.print("Enter amount (0/B to go back): ");
+        System.out.print("Enter amount (or B to go back): ");
         String input = sc.nextLine().trim();
         if (input.equalsIgnoreCase("b") || input.equals("0")) return;
         double amount = Double.parseDouble(input);
@@ -230,10 +221,9 @@ public class AzureDigitalApp {
     }
 
     private void redeemVoucher(UserAccount acc) {
-        System.out.print("Enter voucher code (0/B to go back): ");
+        System.out.print("Enter voucher code (or B to go back): ");
         String code = sc.nextLine().trim();
         if (code.equalsIgnoreCase("b") || code.equals("0")) return;
-
         double value = VoucherSystem.redeemVoucher(acc, code, fileManager);
         if (value > 0) {
             fileManager.saveUsers(users);
@@ -248,7 +238,6 @@ public class AzureDigitalApp {
         String input = sc.nextLine().trim();
         if (input.equalsIgnoreCase("b") || input.equals("0")) return;
         int pts = Integer.parseInt(input);
-
         if (pts <= 0 || pts > acc.getPoints()) {
             System.out.println("Invalid points.");
             return;
