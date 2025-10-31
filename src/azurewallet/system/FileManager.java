@@ -8,7 +8,6 @@ import java.text.DecimalFormat;
 public class FileManager {
 
     private static final String DATA_DIR = System.getProperty("user.dir") + "/src/azurewallet/data/";
-
     private static final String USERS_FILE = DATA_DIR + "users.txt";
     private static final String TRANSACTIONS_FILE = DATA_DIR + "transactions.txt";
     private static final String VOUCHERS_FILE = DATA_DIR + "vouchers.txt";
@@ -33,10 +32,16 @@ public class FileManager {
             new File(INTEREST_LOG_FILE).createNewFile();
             new File(SYSTEM_REVENUE_FILE).createNewFile();
             new File(SCHEDULER_FILE).createNewFile();
+
+            System.out.println("+----------------------------------------------------------+");
+            System.out.println("| Data directory initialized: " + DATA_DIR);
+            System.out.println("+----------------------------------------------------------+");
         } catch (IOException e) {
-            System.out.println("Error initializing data files: " + e.getMessage());
+            System.out.println("| Error initializing data files: " + e.getMessage());
         }
     }
+
+    // ====================== USER MANAGEMENT ======================
 
     public Map<String, UserAccount> loadUsers() {
         Map<String, UserAccount> users = new HashMap<>();
@@ -58,7 +63,7 @@ public class FileManager {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error loading users.");
+            System.out.println("| Error loading users.                                    |");
         }
         return users;
     }
@@ -69,15 +74,17 @@ public class FileManager {
                 pw.println(u.toFileFormat());
             }
         } catch (IOException e) {
-            System.out.println("Error saving users.");
+            System.out.println("| Error saving users.                                     |");
         }
     }
+
+    // ====================== TRANSACTION LOGS ======================
 
     public void logTransaction(String username, String type, double amount) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(TRANSACTIONS_FILE, true))) {
             pw.println(java.time.LocalDateTime.now() + " - " + username + ": " + type + " - PHP " + df.format(amount));
         } catch (IOException e) {
-            System.out.println("Error logging transaction.");
+            System.out.println("| Error logging transaction.                              |");
         }
     }
 
@@ -85,7 +92,7 @@ public class FileManager {
         try (PrintWriter pw = new PrintWriter(new FileWriter(POINTS_LOG_FILE, true))) {
             pw.println(java.time.LocalDateTime.now() + " - " + username + " " + action + " " + points + " points (" + note + ")");
         } catch (IOException e) {
-            System.out.println("Error logging points.");
+            System.out.println("| Error logging points.                                   |");
         }
     }
 
@@ -93,7 +100,7 @@ public class FileManager {
         try (PrintWriter pw = new PrintWriter(new FileWriter(INTEREST_LOG_FILE, true))) {
             pw.println(java.time.LocalDateTime.now() + " - " + username + ": +PHP " + df.format(amount));
         } catch (IOException e) {
-            System.out.println("Error logging interest.");
+            System.out.println("| Error logging interest.                                 |");
         }
     }
 
@@ -101,7 +108,7 @@ public class FileManager {
         try (PrintWriter pw = new PrintWriter(new FileWriter(VOUCHER_LOG_FILE, true))) {
             pw.println(java.time.LocalDateTime.now() + " - " + username + " redeemed " + code + " (PHP " + df.format(value) + ")");
         } catch (IOException e) {
-            System.out.println("Error logging voucher redemption.");
+            System.out.println("| Error logging voucher redemption.                       |");
         }
     }
 
@@ -109,9 +116,11 @@ public class FileManager {
         try (PrintWriter pw = new PrintWriter(new FileWriter(SYSTEM_REVENUE_FILE, true))) {
             pw.println(java.time.LocalDateTime.now() + " - +PHP " + df.format(fee));
         } catch (IOException e) {
-            System.out.println("Error logging system revenue.");
+            System.out.println("| Error logging system revenue.                           |");
         }
     }
+
+    // ====================== DATA READING ======================
 
     public double readSystemRevenue() {
         double total = 0.0;
@@ -143,28 +152,36 @@ public class FileManager {
         return count;
     }
 
+    // ====================== DISPLAY HELPERS ======================
+
     public void showTransactions(String username) {
-        System.out.println("\n=== TRANSACTION HISTORY ===");
+        System.out.println("+==========================================================+");
+        System.out.println("|                    TRANSACTION HISTORY                   |");
+        System.out.println("+==========================================================+");
         try (BufferedReader br = new BufferedReader(new FileReader(TRANSACTIONS_FILE))) {
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.contains(username)) System.out.println(line);
+                if (line.contains(username)) System.out.println("| " + line);
             }
         } catch (IOException e) {
-            System.out.println("Error reading transactions.");
+            System.out.println("| Error reading transactions.                             |");
         }
+        System.out.println("+==========================================================+");
     }
 
     public void showUserVouchers(String username) {
-        System.out.println("\n=== MY VOUCHERS ===");
+        System.out.println("+==========================================================+");
+        System.out.println("|                       MY VOUCHERS                        |");
+        System.out.println("+==========================================================+");
         try (BufferedReader br = new BufferedReader(new FileReader(VOUCHERS_FILE))) {
             String line;
             while ((line = br.readLine()) != null) {
-                if (line.startsWith(username + ",")) System.out.println(line);
+                if (line.startsWith(username + ",")) System.out.println("| " + line);
             }
         } catch (IOException e) {
-            System.out.println("Error reading vouchers.");
+            System.out.println("| Error reading vouchers.                                 |");
         }
+        System.out.println("+==========================================================+");
     }
 
     public int countUserVouchers(String username) {
@@ -178,11 +195,13 @@ public class FileManager {
         return count;
     }
 
+    // ====================== SCHEDULER LOGS ======================
+
     public void logSchedulerRun() {
         try (PrintWriter pw = new PrintWriter(new FileWriter(SCHEDULER_FILE, true))) {
             pw.println(java.time.LocalDateTime.now() + " - Scheduler executed");
         } catch (IOException e) {
-            System.out.println("Error logging scheduler.");
+            System.out.println("| Error logging scheduler.                                |");
         }
     }
 
